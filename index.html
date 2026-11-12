@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="description" content="A kid-friendly illustrated family tree you can grow, zoom and explore.">
+  <meta name="theme-color" content="#CDEFFF">
+  <title>Our Family Tree</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="app">
+    <header class="topbar">
+      <div class="brand">
+        <span class="brand-mark" aria-hidden="true">🌳</span>
+        <div class="brand-text">
+          <h1>Our Family Tree</h1>
+          <p>Tap a photo to see it big · drag the sky to look around</p>
+        </div>
+      </div>
+
+      <div class="tools" role="toolbar" aria-label="Tree tools">
+        <button id="storyBtn" class="btn btn-sun" type="button">▶ Story time</button>
+        <button id="addRootBtn" class="btn" type="button">＋ Grown-up</button>
+
+        <div class="tool-group" role="group" aria-label="Photo size">
+          <span class="tool-label">Photos</span>
+          <button class="size-btn" type="button" data-size="s" aria-label="Small photos">S</button>
+          <button class="size-btn is-active" type="button" data-size="m" aria-label="Medium photos">M</button>
+          <button class="size-btn" type="button" data-size="l" aria-label="Large photos">L</button>
+        </div>
+
+        <button id="collapseAllBtn" class="btn btn-icon" type="button" title="Fold every branch" aria-label="Fold every branch">⊟</button>
+        <button id="expandAllBtn" class="btn btn-icon" type="button" title="Open every branch" aria-label="Open every branch">⊞</button>
+        <button id="muteBtn" class="btn btn-icon" type="button" title="Sound on or off" aria-label="Sound on or off">🔊</button>
+        <button id="posterBtn" class="btn" type="button">🖼 Poster</button>
+
+        <div class="menu-wrap">
+          <button id="menuBtn" class="btn btn-icon" type="button" aria-haspopup="true" aria-expanded="false" aria-label="More options">⋯</button>
+          <div id="menu" class="menu" hidden>
+            <button id="exportBtn" type="button">Export a backup</button>
+            <button id="importBtn" type="button">Load a backup</button>
+            <button id="printBtn" type="button">Print the tree</button>
+            <button id="menuPosterBtn" type="button">Make a poster</button>
+            <hr>
+            <button id="menuSizeBtn" type="button">Photo size: M</button>
+            <button id="menuCollapseBtn" type="button">Fold every branch</button>
+            <button id="menuExpandBtn" type="button">Open every branch</button>
+            <button id="menuMuteBtn" type="button">Sound: on</button>
+            <hr>
+            <button id="helpBtn" type="button">How to play</button>
+            <button id="resetBtn" class="danger" type="button">Start from the sample</button>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <main id="viewport" tabindex="0" aria-label="Family tree. Use the arrow keys to look around, plus and minus to zoom.">
+      <div id="stage">
+        <svg id="art" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false"></svg>
+        <div id="nodes"></div>
+        <div id="chips"></div>
+      </div>
+
+      <div id="hint" class="hint">
+        <span>👋 Tap a photo to see it big. Tap a name tag to change it. Drag the sky to look around.</span>
+        <button id="hintClose" class="hint-close" type="button">Got it</button>
+      </div>
+
+      <div class="zoom-dock" aria-label="Zoom controls">
+        <button id="zoomOut" type="button" aria-label="Zoom out">−</button>
+        <button id="zoomFit" type="button" title="Fit the whole tree">0</button>
+        <button id="zoomIn" type="button" aria-label="Zoom in">＋</button>
+        <span id="zoomLabel" aria-live="off">100%</span>
+      </div>
+    </main>
+
+    <aside id="panel" class="panel" hidden aria-label="Edit a family member">
+      <button id="panelClose" class="panel-close" type="button" aria-label="Close editor">✕</button>
+
+      <div class="panel-head">
+        <div id="panelAvatar" class="panel-avatar" aria-hidden="true"></div>
+        <div class="panel-head-text">
+          <h2 id="panelTitle">Someone</h2>
+          <p id="panelSub">Family member</p>
+          <button id="panelUpload" class="btn btn-small" type="button">Change photo</button>
+        </div>
+      </div>
+
+      <label class="field">Name
+        <input id="fName" maxlength="28" autocomplete="off" spellcheck="false">
+      </label>
+      <label class="field">Relation
+        <input id="fRelation" maxlength="24" autocomplete="off" placeholder="Mom, Grandpa, Cousin…">
+      </label>
+      <label class="field">Fun fact
+        <textarea id="fFun" rows="3" maxlength="140" placeholder="Something silly they do…"></textarea>
+      </label>
+
+      <div class="field-row">
+        <span class="field-label">Frame</span>
+        <div id="frameTray" class="tray" role="group" aria-label="Photo frame"></div>
+      </div>
+
+      <div class="field-row">
+        <span class="field-label">Stickers</span>
+        <div id="stickerTray" class="tray" role="group" aria-label="Stickers"></div>
+      </div>
+
+      <div class="panel-actions">
+        <button id="addChild" class="btn btn-add" type="button">＋ Child</button>
+        <button id="addPartner" class="btn" type="button">＋ Partner</button>
+        <button id="addSibling" class="btn" type="button">＋ Sibling</button>
+        <button id="deletePerson" class="btn btn-danger" type="button">Remove</button>
+      </div>
+    </aside>
+
+    <div id="storyCard" class="story-card" hidden aria-live="polite">
+      <div id="storyAvatar" class="story-avatar" aria-hidden="true"></div>
+      <div class="story-body">
+        <p id="storyStep" class="story-step">1 of 8</p>
+        <h3 id="storyName">Name</h3>
+        <p id="storyText" class="story-text"></p>
+        <div class="story-actions">
+          <button id="storyBack" class="btn btn-small" type="button">← Back</button>
+          <button id="storyNext" class="btn btn-sun btn-small" type="button">Next →</button>
+          <button id="storyStop" class="btn btn-small" type="button">Done</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="lightbox" class="lightbox" hidden role="dialog" aria-modal="true" aria-label="Family photo">
+      <button id="lightboxClose" class="lightbox-close" type="button" aria-label="Close photo">✕</button>
+      <button id="lightboxPrev" class="lightbox-nav prev" type="button" aria-label="Previous person">‹</button>
+      <figure class="lightbox-figure">
+        <div id="lightboxPhoto" class="lightbox-photo"></div>
+        <figcaption>
+          <strong id="lightboxName"></strong>
+          <span id="lightboxRelation"></span>
+          <span id="lightboxFact" class="lightbox-fact"></span>
+        </figcaption>
+      </figure>
+      <button id="lightboxNext" class="lightbox-nav next" type="button" aria-label="Next person">›</button>
+    </div>
+
+    <div id="toast" class="toast" hidden role="status">
+      <span id="toastText"></span>
+      <button id="toastAction" class="toast-action" type="button" hidden>Undo</button>
+    </div>
+
+    <div id="confirm" class="modal" hidden role="dialog" aria-modal="true" aria-labelledby="confirmTitle">
+      <div class="modal-card">
+        <h2 id="confirmTitle">Are you sure?</h2>
+        <p id="confirmText"></p>
+        <div class="modal-actions">
+          <button id="confirmCancel" class="btn" type="button">Keep it</button>
+          <button id="confirmOk" class="btn btn-danger" type="button">Yes, remove</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="help" class="modal" hidden role="dialog" aria-modal="true" aria-labelledby="helpTitle">
+      <div class="modal-card help-card">
+        <h2 id="helpTitle">How to grow your tree</h2>
+        <ul class="help-list">
+          <li>Tap a photo to see it nice and big.</li>
+          <li>Tap a name tag to change the name, add a fun fact, or dress up the photo.</li>
+          <li>Use ＋ Child, ＋ Partner and ＋ Sibling to grow new branches.</li>
+          <li>The ⊟ button folds a branch away and shows ＋3 to count who is hiding.</li>
+          <li>Scroll or pinch to zoom, drag the sky to look around, and press 0 to fit everything.</li>
+          <li>Press ▶ Story time for a tour from the roots to the newest leaf.</li>
+        </ul>
+        <button id="helpClose" class="btn btn-sun" type="button">Let's play</button>
+      </div>
+    </div>
+
+    <canvas id="confetti" class="confetti" aria-hidden="true"></canvas>
+    <div id="printArea" aria-hidden="true"></div>
+
+    <input id="photoFile" type="file" accept="image/*" hidden>
+    <input id="importFile" type="file" accept="application/json,.json" hidden>
+  </div>
+
+  <script src="js/data.js"></script>
+  <script src="js/layout.js"></script>
+  <script src="js/camera.js"></script>
+  <script src="js/art.js"></script>
+  <script src="js/render.js"></script>
+  <script src="js/ui.js"></script>
+  <script src="js/poster.js"></script>
+  <script src="js/main.js"></script>
+</body>
+</html>
